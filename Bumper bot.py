@@ -37,6 +37,36 @@ processed_filename = "submissions_already_processed.txt"
 #########################################################
 # Helper Functions
 
-Bump_Post = ['WTB', 'WTS'] # Match if any of these are found in message
+def GET_submit_text(self, responder):
+        """Get the submission text for the subreddit..
+        """
+        if c.site.over_18 and not c.over18:
+            submit_text = None
+            submit_text_html = None
+        else:
+            submit_text = c.site.submit_text
+            submit_text_html = safemarkdown(c.site.submit_text)
+        return {'submit_text': submit_text,
+                'submit_text_html': submit_text_html}
+      
+      Bump_Post = ['Star Hangar', 'WTS', 'WTB'] # Match if any of these are found in message
 def isbump(message):
   return 'BN' in message and any([b in bump.lower() for b in bumps])
+
+def POST_lock(self, thing):
+        """Lock a link.
+        Prevents a post from receiving new comments.
+        """
+        if thing.archived_slow:
+            return abort(400, "Bad Request")
+        VNotInTimeout().run(action_name="lock", target=thing)
+        thing.locked = True
+        thing._commit()
+
+        ModAction.create(thing.subreddit_slow, c.user, target=thing,
+                         action='lock')
+        
+        
+        # NEEDS ADD
+        # TIMER
+        #LINK TO BUMP TEXT
